@@ -1,6 +1,6 @@
 ﻿using TransactionManagement.Model;
 
-namespace TransactionManagement.Services
+namespace TransactionManagement.Services.Interface
 {
     public interface ICSVService
     {

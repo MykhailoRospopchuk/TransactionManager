@@ -1,6 +1,6 @@
 ﻿using MediatR;
 using TransactionManagement.Database;
-using TransactionManagement.Model;
+using TransactionManagement.Model.Entities;
 using TransactionManagement.Queries;
 
 namespace TransactionManagement.Handlers

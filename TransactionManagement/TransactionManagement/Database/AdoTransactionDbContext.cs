@@ -1,7 +1,7 @@
 ﻿using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using System.Data;
-using TransactionManagement.Model;
+using TransactionManagement.Model.Entities;
 using TransactionManagement.Model.Enums;
 using TransactionManagement.Model.RequestModel;
 

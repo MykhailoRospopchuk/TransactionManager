@@ -1,6 +1,9 @@
 ﻿using CsvHelper;
 using System.Globalization;
+using TransactionManagement.Model.Consts;
 using TransactionManagement.Model.CSVmodelDto;
+using TransactionManagement.Model.ExceptionModel;
+using TransactionManagement.Services.Interface;
 
 namespace TransactionManagement.Services
 {
@@ -8,32 +11,53 @@ namespace TransactionManagement.Services
     {
         public byte[] CreateCSV<T>(IEnumerable<T> data)
         {
-            using var memoryStream = new MemoryStream();
-            using (var streamWriter = new StreamWriter(memoryStream))
+            if (data is null)
             {
-                using (var csvWriter = new CsvWriter(streamWriter, CultureInfo.InvariantCulture))
-                {
-                    csvWriter.Context.RegisterClassMap<TransactRecordWriteMap>();
-                    csvWriter.WriteRecords(data);
-                }
+                throw new NotFoundException(ConstantError.GetNullForException());
             }
 
-            return memoryStream.ToArray();
+            try
+            {
+                using var memoryStream = new MemoryStream();
+                using (var streamWriter = new StreamWriter(memoryStream))
+                {
+                    using (var csvWriter = new CsvWriter(streamWriter, CultureInfo.InvariantCulture))
+                    {
+                        csvWriter.Context.RegisterClassMap<TransactRecordWriteMap>();
+                        csvWriter.WriteRecords(data);
+                    }
+                }
+
+                return memoryStream.ToArray();
+            }
+            catch (Exception e)
+            {
+                throw new CsvCreateErrorException(ConstantError.CsvHandlerErrorForException(nameof(CreateCSV), e.Message));
+            }
         }
 
         public IEnumerable<T> ReadCSV<T>(Stream file)
         {
-            IEnumerable<T> records;
+            List<T> result = new List<T>();
 
-            using (var reader = new StreamReader(file))
-            using (var csv = new CsvReader(reader, CultureInfo.InvariantCulture))
+            try
             {
-                csv.Context.RegisterClassMap<TransactRecordReadMap>();
-                records = csv.GetRecords<T>();
-                foreach (var item in records)
+                using (var reader = new StreamReader(file))
+                using (var csv = new CsvReader(reader, CultureInfo.InvariantCulture))
                 {
-                    yield return item;
+                    csv.Context.RegisterClassMap<TransactRecordReadMap>();
+                    var records = csv.GetRecords<T>();
+                    foreach (var item in records)
+                    {
+                        result.Add(item);
+                    }
                 }
+
+                return result;
+            }
+            catch (Exception e)
+            {
+                throw new CsvReadErrorException(ConstantError.CsvHandlerErrorForException(nameof(ReadCSV), e.Message));
             }
         }
     }

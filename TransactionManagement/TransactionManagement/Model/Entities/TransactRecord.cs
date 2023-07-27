@@ -1,6 +1,6 @@
 ﻿using TransactionManagement.Model.Enums;
 
-namespace TransactionManagement.Model
+namespace TransactionManagement.Model.Entities
 {
     public class TransactRecord
     {

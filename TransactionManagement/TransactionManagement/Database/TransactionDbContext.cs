@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using TransactionManagement.Model;
+using TransactionManagement.Database.Configuration;
+using TransactionManagement.Model.Entities;
 
 namespace TransactionManagement.Database
 {
@@ -9,22 +10,26 @@ namespace TransactionManagement.Database
         {
         }
 
-        public DbSet<TransactRecord> Transactions { get; set; }
+        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        {
+            base.OnConfiguring(optionsBuilder);
+        }
+
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.Entity<TransactRecord>(entity =>
-            {
-                entity.HasKey(x => x.TransactionId);
+            modelBuilder.ApplyConfiguration(new UserConfiguration());
+            modelBuilder.ApplyConfiguration(new RoleConfiguration());
+            modelBuilder.ApplyConfiguration(new UserRefreshTokenConfiguration());
 
-                entity.Property(x => x.TransactionId)
-                    .ValueGeneratedNever();
-
-                entity.Property(x => x.Status)
-                    .HasConversion<string>();
-                entity.Property(x => x.Type)
-                    .HasConversion<string>();
-            });
+            modelBuilder.ApplyConfiguration(new TransactRecordConfiguration());
+            
         }
+
+        public DbSet<User> Users { get; set; }
+        public DbSet<Role> Roles { get; set; }
+        public DbSet<UserRefreshToken> UserRefreshTokens { get; set; }
+
+        public DbSet<TransactRecord> Transactions { get; set; }
     }
 }

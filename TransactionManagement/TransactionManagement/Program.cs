@@ -1,13 +1,12 @@
-
 using FluentValidation.AspNetCore;
-using Microsoft.AspNetCore.Localization;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Options;
-using System;
-using System.Globalization;
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
+using System.Text;
 using TransactionManagement.Database;
 using TransactionManagement.Services;
+using TransactionManagement.Services.Interface;
 
 namespace TransactionManagement
 {
@@ -22,7 +21,29 @@ namespace TransactionManagement
             builder.Services.AddControllers();
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
-            builder.Services.AddSwaggerGen();
+            builder.Services.AddSwaggerGen(options =>
+            {
+                var securityScheme = new OpenApiSecurityScheme()
+                {
+                    Name = "JWT Authentication",
+                    Description = "Enter a valid JWT  bearer token",
+                    In = ParameterLocation.Header,
+                    Type = SecuritySchemeType.Http,
+                    Scheme = "bearer",
+                    BearerFormat = "JWT",
+                    Reference = new OpenApiReference()
+                    {
+                        Id = JwtBearerDefaults.AuthenticationScheme,
+                        Type = ReferenceType.SecurityScheme
+                    }
+                };
+
+                options.AddSecurityDefinition(securityScheme.Reference.Id, securityScheme);
+                options.AddSecurityRequirement(new OpenApiSecurityRequirement
+                {
+                    { securityScheme, new string[] {} }
+                });
+            });
 
             string connection = builder.Configuration.GetConnectionString("DbConnectionString");
             builder.Services.AddDbContext<TransactionDbContext>(options => options.UseSqlServer(connection));
@@ -30,17 +51,11 @@ namespace TransactionManagement
 
 
             builder.Services.AddScoped<ICSVService, CSVService>();
+            builder.Services.AddScoped<ITokenHandlerService, TokenHandlerService>();
+            builder.Services.AddScoped<IAuthenticatorService, AuthenticatorService>();
+
 
             builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(Program).Assembly));
-
-            //builder.Services.Configure<RequestLocalizationOptions>(options =>
-            //{
-            //    var supportedCultures = new[] { "en-US", "fr" };
-            //    options.SetDefaultCulture(supportedCultures[0])
-            //        .AddSupportedCultures(supportedCultures)
-            //        .AddSupportedUICultures(supportedCultures);
-            //});
-
 
             // Add FluentValidation
             builder.Services.AddFluentValidation(options =>
@@ -48,6 +63,23 @@ namespace TransactionManagement
                 options.RegisterValidatorsFromAssemblyContaining<Program>();
                 options.ImplicitlyValidateChildProperties = true;
             });
+
+            // Add Authentication
+            builder.Services
+                .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+                .AddJwtBearer(option => option.TokenValidationParameters
+                    = new TokenValidationParameters()
+                    {
+                        ValidateIssuer = true,
+                        ValidateAudience = true,
+                        ValidateLifetime = true,
+                        ValidateIssuerSigningKey = true,
+                        ValidIssuer = builder.Configuration["Jwt:Issuer"],
+                        ValidAudience = builder.Configuration["Jwt:Audience"],
+                        IssuerSigningKey = new SymmetricSecurityKey(
+                            Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]))
+                    }
+                );
 
             var app = builder.Build();
 
@@ -59,6 +91,8 @@ namespace TransactionManagement
             }
 
             app.UseHttpsRedirection();
+
+            app.UseAuthentication();
 
             app.UseAuthorization();
 

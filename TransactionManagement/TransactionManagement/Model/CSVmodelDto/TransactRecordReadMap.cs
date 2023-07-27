@@ -1,5 +1,6 @@
 ﻿using CsvHelper.Configuration;
 using System.Globalization;
+using TransactionManagement.Model.Entities;
 using TransactionManagement.Model.Enums;
 
 namespace TransactionManagement.Model.CSVmodelDto

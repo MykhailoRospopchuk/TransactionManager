@@ -1,5 +1,5 @@
 ﻿using MediatR;
-using TransactionManagement.Model;
+using TransactionManagement.Model.Entities;
 
 namespace TransactionManagement.Queries
 {
