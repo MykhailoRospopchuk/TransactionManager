@@ -6,9 +6,6 @@ using TransactionManagement.Model.RequestModel;
 using TransactionManagement.Model.Entities;
 using TransactionManagement.Services.Interface;
 using Microsoft.AspNetCore.Authorization;
-using System.Data;
-using Microsoft.AspNetCore.Http.HttpResults;
-using TransactionManagement.Model.Consts;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -29,8 +26,13 @@ namespace TransactionManagement.Controllers
             _sender = sender;
         }
 
+        /// <summary>
+        /// Get all transactions in csv format
+        /// </summary>
+        /// <response code="200">Returns a CSV file</response>
         // GET: api/<TransactionCsvController>/get-all-csv
         [HttpGet("get-all-csv")]
+        [ProducesResponseType(200)]
         public async Task<IActionResult> GetAllTransactions()
         {
             IEnumerable<TransactRecord> transactionData = await _sender.Send(new GetAllTransactionQuery());
@@ -45,8 +47,14 @@ namespace TransactionManagement.Controllers
             return File(transactions, "text/csv", "transactions.csv");
         }
 
+        /// <summary>
+        /// Get transactions filtered by type and status in csv format
+        /// </summary>
+        /// <param name="filterRequest"></param>
+        /// <response code="200">Returns a CSV file</response>
         // GET: api/<TransactionCsvController>/get-filtered-csv
         [HttpGet("get-filtered-csv")]
+        [ProducesResponseType(200)]
         public async Task<IActionResult> GetFilterTransactions([FromQuery] FilterTransactionCsvRequest filterRequest)
         {
             IEnumerable<TransactRecord> transactionData = await _sender.Send(new GetFilterTransactionQuery(filterRequest));
@@ -61,6 +69,11 @@ namespace TransactionManagement.Controllers
             return File(transactions, "text/csv", "filter_transactions.csv");
         }
 
+        /// <summary>
+        /// Upload transactions in csv format. If the transaction with the ID already exists, the status will be updated
+        /// </summary>
+        /// <param name="file"></param>
+        /// <returns></returns>
         // POST api/<TransactionCsvController>/post-csv
         [HttpPost("post-csv")]
         public async Task<IActionResult> Post(IFormFile file)

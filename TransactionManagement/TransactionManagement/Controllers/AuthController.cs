@@ -18,6 +18,10 @@ namespace TransactionManagement.Controllers
             _authenticator = authenticator;
         }
 
+        /// <summary>
+        /// Performing user authorization by login and password
+        /// </summary>
+        /// <param name="loginRequest"></param>
         [HttpPost]
         [Route("login")]
         public async Task<IActionResult> Index([FromBody] LoginRequest loginRequest)
@@ -27,6 +31,10 @@ namespace TransactionManagement.Controllers
             return Ok(token);
         }
 
+        /// <summary>
+        /// Refresh token
+        /// </summary>
+        /// <param name="expiredToken"></param>
         [HttpPost]
         [Route("refresh")]
         public async Task<IActionResult> Refresh(string expiredToken)

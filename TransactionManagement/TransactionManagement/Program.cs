@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using System.Reflection;
 using System.Text;
 using TransactionManagement.Database;
 using TransactionManagement.Services;
@@ -43,6 +44,10 @@ namespace TransactionManagement
                 {
                     { securityScheme, new string[] {} }
                 });
+
+                string xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+                string xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+                options.IncludeXmlComments(xmlPath);
             });
 
             string connection = builder.Configuration.GetConnectionString("DbConnectionString");

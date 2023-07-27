@@ -40,7 +40,7 @@ namespace TransactionManagement.Database.Configuration
                         Id = 1,
                         RoleId = 1,
                         Email = "bigbos@gmail.com",
-                        Password = "bigbos",
+                        Password = "automapper",
                         FirstName = "Admin",
                         LastName = "Admin"
                     }
